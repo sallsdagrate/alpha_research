@@ -1,0 +1,8 @@
+exchange: binance
+quote_currency: USDT
+taker_fee_bps: 5.0
+maker_fee_bps: 2.0
+spread_bps_floor: 1.0
+slippage_bps: 1.0
+latency_ms: 1000
+funding_included: true

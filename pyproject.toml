@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "alpha-research"
+version = "0.1.0"
+description = "Local-first crypto perpetual futures alpha research toolkit"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "polars>=1.0",
+    "pyarrow>=16.0",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "hypothesis>=6.100",
+    "pyright>=1.1",
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+notebook = [
+    "ipykernel>=6.29",
+    "matplotlib>=3.9",
+    "notebook>=7.2",
+    "pandas>=2.2",
+    "statsmodels>=0.14",
+]
+
+[project.scripts]
+alpha = "alpha_research.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha_research"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
