@@ -1,30 +1,28 @@
+import unittest
 from datetime import date
 from pathlib import Path
-import unittest
 
-from alpha_research.paths import DataPaths, manifest_path
+from alpha_research.paths import DataPaths
 
 
 class PathTests(unittest.TestCase):
-    def test_normalized_partition_path(self) -> None:
+    def test_raw_archive_path(self) -> None:
         paths = DataPaths(Path("data"))
 
-        partition = paths.normalized_partition(
+        archive = paths.raw_file(
             dataset="trades",
             exchange="binance",
             market="perp",
             symbol="BTCUSDT",
             day=date(2024, 1, 1),
+            suffix=".zip",
         )
 
         self.assertEqual(
-            partition.as_posix(),
+            archive.as_posix(),
             (
-                "data/normalized/trades/exchange=binance/market=perp/"
-                "symbol=BTCUSDT/date=2024-01-01"
+                "data/raw/exchange=binance/market=perp/dataset=trades/"
+                "symbol=BTCUSDT/date=2024-01-01/"
+                "BTCUSDT-trades-2024-01-01.zip"
             ),
         )
-
-    def test_manifest_path_for_file_and_directory(self) -> None:
-        self.assertEqual(manifest_path(Path("x/y.zip")), Path("x/y.zip.manifest.json"))
-        self.assertEqual(manifest_path(Path("x/y")), Path("x/y/_manifest.json"))

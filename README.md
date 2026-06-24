@@ -1,33 +1,69 @@
 # Alpha Research
 
-Local-first research toolkit for crypto perpetual futures alpha hypotheses.
+Minimal local workflow for downloading public Binance trade data and exploring it
+in notebooks.
 
-The project is intentionally file-based: public exchange data is downloaded into
-`data/raw`, normalized into Parquet under `data/normalized`, transformed into
-research tables under `data/curated`, and tracked with JSON manifests.
+There is intentionally no normalization or dataset-building pipeline. The CLI
+stores the original daily ZIP archives under `data/raw`; notebook code loads
+those files directly with Polars or pandas.
 
 ## Setup
 
 ```bash
 uv sync --extra dev --extra notebook
-uv run alpha --help
 ```
 
-If `uv` is not installed yet, install it first, then run the commands above.
+## Download data
 
-## No-download dry run
-
-The fetch command supports planning without downloading:
+Edit `configs/data/binance_core.yaml`, preview the request list, then download:
 
 ```bash
-alpha data fetch --config configs/data/binance_core.yaml --dry-run
+uv run alpha data download \
+  --config configs/data/binance_core.yaml \
+  --dry-run
+
+uv run alpha data download \
+  --config configs/data/binance_core.yaml
 ```
 
-When ready to download, run the same command without `--dry-run`.
+Existing archives are reused. Add `--force` only when you intentionally want to
+download them again.
 
-## First target
+## Load data in a notebook
 
-The first vertical slice is Hypothesis 1:
+Polars:
 
-> Does spot signed trade imbalance at time `t` predict perp returns over short
-> horizons after timestamp alignment, latency, spread, and fees?
+```python
+from alpha_research.data import load_trades
+
+spot = load_trades(
+    market="spot",
+    symbol="BTCUSDT",
+    start_date="2024-01-01",
+    end_date="2024-01-03",
+)
+```
+
+pandas:
+
+```python
+perp = load_trades(
+    market="perp",
+    symbol="BTCUSDT",
+    start_date="2024-01-01",
+    end_date="2024-01-03",
+    engine="pandas",
+)
+```
+
+The loader only handles Binance's inconsistent CSV headers and adds
+`exchange`, `market`, `symbol`, and `source_date`. Timestamp conversion,
+cleaning, aggregation, alignment, features, and labels belong in the notebook.
+
+To list the matching archives without loading them:
+
+```python
+from alpha_research.data import find_trade_archives
+
+find_trade_archives(market="spot", symbol="BTCUSDT")
+```

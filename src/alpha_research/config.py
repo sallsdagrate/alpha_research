@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -93,17 +93,13 @@ def _coerce_scalar(value: str) -> Any:
 
 @dataclass(frozen=True)
 class DataConfig:
-    """Data ingestion configuration."""
+    """Binance archive download configuration."""
 
     data_root: Path
-    source: str
-    exchange: str
     symbols: tuple[str, ...]
     markets: tuple[str, ...]
-    datasets: tuple[str, ...]
     start_date: date
     end_date: date
-    latency_ms: int = 1000
     overwrite: bool = False
 
     @classmethod
@@ -115,11 +111,8 @@ class DataConfig:
     def from_mapping(cls, raw: dict[str, Any]) -> DataConfig:
         required = [
             "data_root",
-            "source",
-            "exchange",
             "symbols",
             "markets",
-            "datasets",
             "start_date",
             "end_date",
         ]
@@ -131,69 +124,16 @@ class DataConfig:
         end = date.fromisoformat(str(raw["end_date"]))
         if end < start:
             raise ConfigurationError("end_date must be on or after start_date")
+        markets = tuple(str(item) for item in raw["markets"])
+        unsupported = sorted(set(markets) - {"spot", "perp"})
+        if unsupported:
+            raise ConfigurationError(f"Unsupported markets: {unsupported}")
 
         return cls(
             data_root=Path(str(raw["data_root"])),
-            source=str(raw["source"]),
-            exchange=str(raw["exchange"]),
             symbols=tuple(str(item) for item in raw["symbols"]),
-            markets=tuple(str(item) for item in raw["markets"]),
-            datasets=tuple(str(item) for item in raw["datasets"]),
+            markets=markets,
             start_date=start,
             end_date=end,
-            latency_ms=int(raw.get("latency_ms", 1000)),
             overwrite=bool(raw.get("overwrite", False)),
-        )
-
-
-@dataclass(frozen=True)
-class ExperimentConfig:
-    """Experiment configuration."""
-
-    hypothesis_id: str
-    claim: str
-    data_root: Path
-    exchange: str
-    symbols: tuple[str, ...]
-    start_date: date
-    end_date: date
-    curated_dataset: str
-    horizons_seconds: tuple[int, ...]
-    latency_ms: int
-    cost_config: Path | None = None
-    raw: dict[str, Any] = field(default_factory=dict)
-
-    @classmethod
-    def from_file(cls, path: Path) -> ExperimentConfig:
-        raw = load_mapping(path)
-        required = [
-            "hypothesis_id",
-            "claim",
-            "data_root",
-            "exchange",
-            "symbols",
-            "start_date",
-            "end_date",
-            "curated_dataset",
-            "horizons_seconds",
-        ]
-        missing = [key for key in required if key not in raw]
-        if missing:
-            raise ConfigurationError(
-                f"Missing required experiment config keys: {missing}"
-            )
-
-        return cls(
-            hypothesis_id=str(raw["hypothesis_id"]),
-            claim=str(raw["claim"]),
-            data_root=Path(str(raw["data_root"])),
-            exchange=str(raw["exchange"]),
-            symbols=tuple(str(item) for item in raw["symbols"]),
-            start_date=date.fromisoformat(str(raw["start_date"])),
-            end_date=date.fromisoformat(str(raw["end_date"])),
-            curated_dataset=str(raw["curated_dataset"]),
-            horizons_seconds=tuple(int(item) for item in raw["horizons_seconds"]),
-            latency_ms=int(raw.get("latency_ms", 1000)),
-            cost_config=Path(str(raw["cost_config"])) if raw.get("cost_config") else None,
-            raw=raw,
         )

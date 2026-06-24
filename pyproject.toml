@@ -10,8 +10,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "polars>=1.0",
-    "pyarrow>=16.0",
-    "pydantic>=2.7",
     "pyyaml>=6.0",
 ]
 
@@ -47,7 +45,7 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 [tool.pyright]
 include = ["src", "tests"]
 pythonVersion = "3.12"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]

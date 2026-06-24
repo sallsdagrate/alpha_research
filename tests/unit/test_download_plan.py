@@ -1,6 +1,6 @@
+import unittest
 from datetime import date
 from pathlib import Path
-import unittest
 
 from alpha_research.config import DataConfig
 from alpha_research.data.download import binance_archive_url, plan_downloads

@@ -268,7 +268,9 @@ Priority data types:
 6. order-book snapshots or live book updates
 7. cross-venue data, if available
 
-The data layer should normalize all sources into consistent schemas. Every row should have:
+Infrastructure should only download and preserve original source files. Each
+research notebook should perform the cleaning and construct the dataset needed
+for its hypothesis. Notebook-built tables should make these fields explicit:
 
 * timestamp
 * exchange
@@ -424,7 +426,7 @@ The agent should avoid turning the project into any of these.
 
 The final project should ideally produce:
 
-1. cleaned and normalized market data
+1. notebook code that turns raw market data into an analysis-ready table
 2. reusable feature-generation code
 3. forward-return labels
 4. signal IC analysis
